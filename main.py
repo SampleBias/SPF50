@@ -1,61 +1,42 @@
+import sys
+import os
 import argparse
-import logging
-from typing import List, Optional
 
-from .config import AppConfig, ClientConfig, AttackConfig, setup_logging
-from .fuzzer import execute_fuzzing, get_available_attacks
-from .chat import interactive_chat
-from .utils import summarize_system_prompts
+# Add the current directory and its parent to the Python path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, current_dir)
+sys.path.insert(0, parent_dir)
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(description="ATLAS-H Security Fuzzer")
-    parser.add_argument('--debug', type=int, choices=[0, 1, 2], default=1,
-                        help='Debug level: 0=WARNING, 1=INFO, 2=DEBUG')
-    parser.add_argument('--interactive', action='store_true',
-                        help='Run in interactive mode')
-    parser.add_argument('--attack', type=str, choices=get_available_attacks(),
-                        help='Specific attack to run')
-    parser.add_argument('--system-prompt', type=str,
-                        help='System prompt to use for testing')
-    return parser.parse_args()
+from SPF50.fuzzer import Fuzzer, get_available_attacks
 
 def main():
-    args = parse_arguments()
+    parser = argparse.ArgumentParser(description='SPF50 Fuzzer')
+    parser.add_argument('--target', type=str, required=True, help='Target URL to fuzz')
+    parser.add_argument('--attack', type=str, choices=get_available_attacks(), help='Specific attack to run')
+    parser.add_argument('--model', type=str, default='wizard-vicuna-uncensored', help='Model to use for attack generation')
+    parser.add_argument('--list-attacks', action='store_true', help='List available attacks and exit')
+
+    args = parser.parse_args()
+
+    if args.list_attacks:
+        print("Available attacks:", ", ".join(get_available_attacks()))
+        return
+
+    fuzzer = Fuzzer(model=args.model)
     
-    # Setup logging
-    setup_logging(args.debug)
-    
-    # Load configurations
-    app_config = AppConfig()
-    client_config = ClientConfig()
-    attack_config = AttackConfig()
-    
-    if args.interactive:
-        interactive_mode(app_config, client_config, attack_config)
+    if args.attack:
+        result = fuzzer.fuzz(args.target, args.attack)
+        print(f"Attack: {args.attack}")
+        print(f"Target: {args.target}")
+        print(f"Result: {result}")
     else:
-        batch_mode(args, app_config, client_config, attack_config)
-
-def interactive_mode(app_config: AppConfig, client_config: ClientConfig, attack_config: AttackConfig):
-    logging.info("Starting interactive mode")
-    while True:
-        system_prompt = input("Enter system prompt (or 'q' to quit): ")
-        if system_prompt.lower() == 'q':
-            break
-        
-        attack_type = input("Enter attack type (or press Enter for all): ")
-        if not attack_type:
-            attack_type = None
-        
-        execute_fuzzing(app_config, client_config, attack_config, system_prompt, attack_type)
-        
-        chat_option = input("Do you want to start an interactive chat? (y/n): ")
-        if chat_option.lower() == 'y':
-            interactive_chat(client_config, system_prompt)
-
-def batch_mode(args, app_config: AppConfig, client_config: ClientConfig, attack_config: AttackConfig):
-    logging.info("Starting batch mode")
-    system_prompt = args.system_prompt or input("Enter system prompt: ")
-    execute_fuzzing(app_config, client_config, attack_config, system_prompt, args.attack)
+        print(f"Running all available attacks against {args.target}")
+        results = fuzzer.fuzz_all(args.target)
+        for result in results:
+            print(f"Attack: {result['attack_type']}")
+            print(f"Result: {result}")
+            print("---")
 
 if __name__ == "__main__":
     main()

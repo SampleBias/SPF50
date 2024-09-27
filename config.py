@@ -1,17 +1,18 @@
+import json
 import logging
 from logging.handlers import RotatingFileHandler
-from typing import Literal, Dict, Any
+from typing import Literal
 from dataclasses import dataclass
 
-# Define the log file path for the ATLAS security fuzzer
-LOG_FILE_PATH = "ATLAS-security-fuzzer.log"
+# Define the log file path for the SPF50 security fuzzer
+LOG_FILE_PATH = "SPF50-security-fuzzer.log"
 
 # Define valid debug levels
 DebugLevel = Literal[0, 1, 2]
 
 @dataclass
 class AppConfig:
-    """Configuration class for the ATLAS-H Security Fuzzer application."""
+    """Configuration class for the SPF50 Security Fuzzer application."""
     num_workers: int = 4
     debug_level: DebugLevel = 1
 
@@ -34,7 +35,7 @@ class AttackConfig:
 
 def setup_logging(debug_level: DebugLevel) -> None:
     """
-    Set up logging for the ATLAS Security Fuzzer.
+    Set up logging for the SPF50 Security Fuzzer.
 
     Args:
         debug_level (DebugLevel): 0 for WARNING, 1 for INFO, 2 for DEBUG
@@ -68,23 +69,10 @@ def setup_logging(debug_level: DebugLevel) -> None:
     root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
 
-    logging.info(f"ATLAS Security Fuzzer logging initialized at level: {logging.getLevelName(logging_level)}")
+    logging.info(f"SPF50 Security Fuzzer logging initialized at level: {logging.getLevelName(logging_level)}")
 
-def load_config(config_path: str) -> Dict[str, Any]:
-    """
-    Load configuration from a file.
-
-    Args:
-        config_path (str): Path to the configuration file.
-
-    Returns:
-        Dict[str, Any]: Loaded configuration as a dictionary.
-    """
-    # Implement configuration loading logic here
-    # This could involve reading from a JSON, YAML, or INI file
-    # For now, we'll return a dummy configuration
-    return {
-        "app": AppConfig(),
-        "client": ClientConfig(api_key="dummy_key"),
-        "attack": AttackConfig()
-    }
+class ConfigLoader:
+    @staticmethod
+    def load_config():
+        # Implement config loading logic here
+        return AppConfig(), ClientConfig(), AttackConfig()

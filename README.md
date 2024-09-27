@@ -1,2 +1,3 @@
-# SPF50
-System Prompt Fuzzer for LLMs
+# SPF50 Fuzzer
+
+## Installation

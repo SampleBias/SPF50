@@ -5,17 +5,17 @@ with open('README.md', 'r', encoding='utf-8') as fh:
     long_description = fh.read()
 
 setup(
-    name="ATLAS-H-security-fuzzer",
+    name="SPF50-security-fuzzer",
     version=os.getenv('PKG_VERSION', '0.0.1'),
     author="VivaSecuris",
     author_email="vivasecuris@pm.me",
     description="Security Fuzzer for Healthcare LLMs",
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url="https://github.com/VivaSecuris/ATLAS-H",
+    url="https://github.com/VivaSecuris/SPF50",
     packages=find_packages(),
     package_data={
-        'ATLAS_H': ['attack_data/*'],
+        'SPF50': ['attack_data/*'],
     },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
@@ -44,14 +44,15 @@ setup(
         "inquirer==3.2.4",
         "prompt-toolkit==3.0.43",
         "fastparquet==2024.2.0",
-        "streamlit==1.26.0"  # Added for the streamlit app
+        "streamlit==1.26.0",  # Added for the streamlit app
+        'ollama',
     ],
     extras_require={
         "dev": ["pytest==7.4.4"]
     },
     entry_points={
         'console_scripts': [
-            'atlas-h-security-fuzzer=ATLAS_H.main:main',  # Updated entry point
+            'spf50-security-fuzzer=SPF50.main:main',  # Updated entry point
         ],
     },
     license="Unlicensed",

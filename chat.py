@@ -7,7 +7,8 @@ from prompt_toolkit import prompt as prompt_toolkit_prompt, HTML
 from prompt_toolkit.styles import Style
 from prompt_toolkit.key_binding import KeyBindings
 
-from .config import ClientConfig
+from config import ClientConfig
+from some_module import InteractiveChat  # Add this import statement
 
 # Initialize colorama for cross-platform colored output
 colorama.init()
@@ -17,7 +18,7 @@ RESET = colorama.Style.RESET_ALL
 BRIGHT = colorama.Style.BRIGHT
 BRIGHT_BLUE = colorama.Fore.BLUE + BRIGHT
 BRIGHT_RED = colorama.Fore.RED + BRIGHT
-BRIGHT_ORANGE = colorama.Fore.YELLOW + BRIGHT
+BRIGHT_ORANGE = colorama.Fore.LIGHTYELLOW_EX + BRIGHT
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -29,33 +30,57 @@ class Message:
 
 MessageList = List[Message]
 
-class ClientBase(ABC):
+class ChatClient(ABC):
+    """Abstract base class for chat clients."""
+
+    def __init__(self, config: ClientConfig):
+        self.config = config
+
     @abstractmethod
-    def interact(self, history: MessageList, messages: MessageList) -> str:
+    def interact(self, messages: List[Dict[str, Any]], new_message: Dict[str, Any]) -> str:
+        """Interact with the chat client."""
         pass
 
-class FakeChatClient(ClientBase):
-    def interact(self, history: MessageList, messages: MessageList) -> str:
+class FakeChatClient(ChatClient):
+    def interact(self, messages: List[Dict[str, Any]], new_message: Dict[str, Any]) -> str:
         return "FakeChat response"
 
-class ClientLangChain(ClientBase):
+class ClientLangChain(ChatClient):
     def __init__(self, config: ClientConfig):
         self.config = config
         # Initialize LangChain client here
 
-    def interact(self, history: MessageList, messages: MessageList) -> str:
-        history.extend(messages)
+    def interact(self, messages: List[Dict[str, Any]], new_message: Dict[str, Any]) -> str:
+        messages.append(new_message)
         try:
             # Implement LangChain interaction here
             response = "LangChain response"  # Placeholder
-            history.append(Message("assistant", response))
+            messages.append({"role": "assistant", "content": response})
             return response
         except Exception as e:
             logger.warning(f"Chat inference failed with error: {e}")
             raise
 
+class LangChainClient(ChatClient):
+    """LangChain chat client implementation."""
+
+    def __init__(self, config: ClientConfig):
+        super().__init__(config)
+        # Initialize LangChain client here
+
+    def interact(self, messages: List[Dict[str, Any]], new_message: Dict[str, Any]) -> str:
+        messages.append(new_message)
+        try:
+            # Implement LangChain interaction here
+            response = "LangChain response"  # Placeholder
+            messages.append({"role": "assistant", "content": response})
+            return response
+        except Exception as e:
+            logger.warning(f"LangChain interaction failed with error: {e}")
+            raise
+
 class ChatSession:
-    def __init__(self, client: ClientBase, system_prompts: Optional[List[str]] = None):
+    def __init__(self, client: ChatClient, system_prompts: Optional[List[str]] = None):
         self.client = client
         self.history: MessageList = []
         self.system_prompts: Optional[List[Message]] = None
@@ -71,7 +96,7 @@ class ChatSession:
             input_messages.extend(self.system_prompts)
         input_messages.append(Message("user", user_prompt))
 
-        result = self.client.interact(self.history, input_messages)
+        result = self.client.interact([msg.__dict__ for msg in self.history], input_messages[-1].__dict__)
         logger.debug(f"say: result={result}")
         return result
 
@@ -98,16 +123,24 @@ def text_input(prompt_text: str, initial_text: str = "") -> str:
         return initial_text
 
 def interactive_chat(client_config: ClientConfig, system_prompt: str):
-    client = ClientLangChain(client_config)
-    chat_session = ChatSession(client, [system_prompt])
+    chat_client = LangChainClient(client_config)
+    chat_interface = InteractiveChat(chat_client, system_prompt)
 
-    print(f"{BRIGHT_BLUE}Starting interactive chat. Type 'exit' to end the session.{RESET}")
     while True:
-        user_input = text_input("You: ")
-        if user_input.lower() == 'exit':
+        user_input = input("You: ")
+        if user_input.lower() in ['exit', 'quit']:
             break
-        
-        response = chat_session.say(user_input)
-        print(f"{BRIGHT_ORANGE}Assistant: {response}{RESET}")
+        messages = [{"role": "user", "content": user_input}]
+        response = chat_interface.interact(chat_interface.history, messages)
+        print(f"Assistant: {response}")
 
-    print(f"{BRIGHT_BLUE}Chat session ended.{RESET}")
+def main():
+    # Your main program logic here
+    pass
+
+if __name__ == "__main__":
+    try:
+        main()
+        print("Program executed successfully!")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")

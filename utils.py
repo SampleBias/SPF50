@@ -72,50 +72,8 @@ class ProgressWorker:
         self.progress_bar.refresh()
 
 class WorkProgressPool:
-    """Manages a pool of workers with progress tracking capabilities."""
-
-    def __init__(self, num_workers: int):
-        self.num_workers = num_workers
-        self.enable_per_test_progress_bars = False  # Feature not fully tested
-        self.progress_workers = [ProgressWorker(worker_id, progress_bar=self.enable_per_test_progress_bars) for worker_id in range(self.num_workers)]
-        self.queue_progress_bar = tqdm(total=1, desc=f"{colorama.Style.BRIGHT}{'Test progress ':.<54}{RESET}")
-        self.semaphore = threading.Semaphore(self.num_workers)
-        self.tasks_count: Optional[int] = None
-        self.tasks = []
-
-    def submit_task(self, task: Callable, *args, **kwargs):
-        self.tasks.append((task, args, kwargs))
-
-    def worker_function(self, worker_id: int):
-        progress_worker = self.progress_workers[worker_id]
-        while True:
-            self.semaphore.acquire()
-            if not self.tasks:
-                self.semaphore.release()
-                break
-            task, args, kwargs = self.tasks.pop(0)
-            try:
-                task(*args, **kwargs, progress_worker=progress_worker)
-            except Exception as e:
-                logger.error(f"Task caused exception: {e}", exc_info=True)
-            finally:
-                self.semaphore.release()
-                if self.tasks_count:
-                    with self.queue_progress_bar.get_lock():
-                        self.queue_progress_bar.n += 1
-                        self.queue_progress_bar.total = self.tasks_count
-                        self.queue_progress_bar.refresh()
-
-    def wait_completion(self):
-        self.tasks_count = len(self.tasks)
-        threads = []
-        for i in range(self.num_workers):
-            thread = threading.Thread(target=self.worker_function, args=(i,))
-            thread.start()
-            threads.append(thread)
-        for thread in threads:
-            thread.join()
-        self.queue_progress_bar.close()
+    # Your WorkProgressPool implementation here
+    pass
 
 def summarize_system_prompts(client, system_prompts: List[str]) -> str:
     """
@@ -141,7 +99,7 @@ def summarize_system_prompts(client, system_prompts: List[str]) -> str:
     return client.interact([], [{"role": "user", "content": user_message}])
 
 """
-Results Table Module for ATLAS-H Security Fuzzer
+Results Table Module for SPF50 Security Fuzzer
 
 This module provides functionality to create and print formatted tables
 for displaying test results. It uses colorama for colored output and
