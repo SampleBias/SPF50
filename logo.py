@@ -15,38 +15,19 @@ RESET = colorama.Style.RESET_ALL
 WHITE = colorama.Fore.WHITE
 CYAN = colorama.Fore.CYAN
 
+logo = """
+   _____ _____  ______   ______ _                ____  
+  / ____|  __ \|  ____| |  ____(_)              / __ \ 
+ | (___ | |__) | |__    | |__   ___   _____    | |  | |
+  \___ \|  ___/|  __|   |  __| | \ \ / / _ \   | |  | |
+  ____) | |    | |      | |    | |\ V /  __/   | |__| |
+ |_____/|_|    |_|      |_|    |_| \_/ \___|    \____/ 
+                                                       
+           LLM Vulnerability Fuzzer
+"""
+
 def print_logo():
-    """Print the SPF50 Security Fuzzer logo."""
-    logo = r"""
-    ╔════════════════════════════════════════════════════╗
-    ║                                                    ║
-    ║   ███████╗██████╗ ███████╗███████╗ ██████╗         ║
-    ║   ██╔════╝██╔══██╗██╔════╝██╔════╝██╔═████╗        ║
-    ║   ███████╗██████╔╝█████╗  ███████╗██║██╔██║        ║
-    ║   ╚════██║██╔═══╝ ██╔══╝  ╚════██║████╔╝██║        ║
-    ║   ███████║██║     ██║     ███████║╚██████╔╝        ║
-    ║   ╚══════╝╚═╝     ╚═╝     ╚══════╝ ╚═════╝         ║
-    ║                                                    ║
-    ║             Bow Down to the Fuzz                   ║
-    ║                                                    ║
-    ╚════════════════════════════════════════════════════╝
-    """
-
-    # Color mapping for easy modification
-    color_map = {
-        '█': WHITE,
-        '─': CYAN,
-        '│': CYAN,
-        '╔': CYAN,
-        '╗': CYAN,
-        '╚': CYAN,
-        '╝': CYAN,
-    }
-
-    # Apply colors to the logo
-    colored_logo = ''.join(color_map.get(char, '') + char + RESET for char in logo)
-    
-    print(colored_logo)
+    print(logo)
 
 # Usage example
 if __name__ == "__main__":
