@@ -14,7 +14,7 @@ def main():
     parser = argparse.ArgumentParser(description='SPF50 Fuzzer')
     parser.add_argument('--target', type=str, required=True, help='Target URL to fuzz')
     parser.add_argument('--attack', type=str, choices=get_available_attacks(), help='Specific attack to run')
-    parser.add_argument('--model', type=str, default='wizard-vicuna-uncensored', help='Model to use for attack generation')
+    parser.add_argument('--model', type=str, default='llama3.2', help='Model to use for attack generation')
     parser.add_argument('--list-attacks', action='store_true', help='List available attacks and exit')
 
     args = parser.parse_args()
